@@ -81,6 +81,8 @@ void get_d20(int fd)
   char *res = calloc(200, sizeof(char));
   sprintf(res, "%d\n", random);
 
+  fprintf(stderr, "D20 roll: %s\n", res);
+
   send_response(fd, RESP_200, "text/plain", (void *)res, strlen(res));
 }
 
@@ -133,6 +135,8 @@ char *find_start_of_body(char *header)
     ///////////////////
     // IMPLEMENT ME! // (Stretch)
     ///////////////////
+
+  return NULL;
 }
 
 /**
@@ -151,22 +155,51 @@ void handle_http_request(int fd, struct cache *cache)
         return;
     }
 
-    fprintf(stderr, "\nrequest:\n%s\n\n", request);
+    fprintf(stderr, "<request>\n%s\n</request>\n", request);
 
+    char cmd[10] = {0};
+    char path[256] = {0};
+    char ch;
 
-    ///////////////////
-    // IMPLEMENT ME! //
-    ///////////////////
+    int cmd_done = 0;
+    int j = 0;
 
-    // Read the first two components of the first line of the request 
- 
-    // If GET, handle the get endpoints
+    for (int i = 0; i < strlen(request); i++) {
+      ch = request[i];
 
-    //    Check if it's /d20 and handle that special case
-    //    Otherwise serve the requested file by calling get_file()
+      if (ch == ' ') {
+        if (cmd_done)
+          break;
+        
+        cmd_done = 1;
+        j = 0;
+        continue;
+      }
+      
+      if (cmd_done) {
+        path[j] = ch;
+      }
+      else {
+        cmd[j] = ch;
+      }
 
+      j++;
 
-    // (Stretch) If POST, handle the post request
+    }
+
+    if (strcmp(cmd, "GET") == 0) {
+      fprintf(stderr, "%s\n", path);
+      if (strcmp(path, "/d20") == 0) {
+        puts("GET D20");
+        get_d20(fd);
+      }
+      else {
+        puts("GET FILE");
+        get_file(fd, cache, path);
+      }
+    }
+
+    // TODO (Stretch) If POST, handle the post request
 }
 
 /**
