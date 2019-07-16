@@ -29,10 +29,13 @@
 #include <time.h>
 #include <sys/file.h>
 #include <fcntl.h>
+
+#include "error.h"
 #include "net.h"
 #include "file.h"
 #include "mime.h"
 #include "cache.h"
+#include "io.h"
 
 #define PORT "3490"  // the port users will be connecting to
 
@@ -40,7 +43,13 @@
 #define SERVER_ROOT "./serverroot"
 
 #define RESP_200 "HTTP/1.1 200 OK"
+#define RESP_204 "HTTP/1.1 204 NO CONTENT"
 #define RESP_404 "HTTP/1.1 404 NOT FOUND"
+
+typedef struct conndat_t {
+  int fd;
+  const char *addr;
+} conndat_t;
 
 /**
  * Send an HTTP response
@@ -51,17 +60,19 @@
  * 
  * Return the value from the send() function.
  */
-int send_response(int fd, char *header, char *content_type, void *body, int content_length)
+int send_response(conndat_t *cd, char *header, char *content_type, void *body, int content_length)
 {
     const int max_response_size = 262144;
     char response[max_response_size];
+
+    timestamp("%s : replying %s", cd->addr, header);
 
     // Build HTTP response and store it in response
     sprintf(response, "%s\n\n%s", header, (char *)body);
     int response_length = strlen(response);
 
     // Send it all!
-    int rv = send(fd, response, response_length, 0);
+    int rv = send(cd->fd, response, response_length, 0);
 
     if (rv < 0) {
         perror("send");
@@ -71,25 +82,66 @@ int send_response(int fd, char *header, char *content_type, void *body, int cont
 }
 
 
+char **split(char *in, char on)
+{
+  char **res = malloc(1*sizeof(char *));
+  int reslen = 1;
+  
+  int l = strlen(in), itmidx = 0, residx = 0;
+  res[residx] = calloc(256, sizeof(char));
+  
+  char ch;
+  for (int i = 0; i < l; i++) {
+    ch = in[i];
+
+    if (ch == on) {
+      itmidx = 0;
+      residx ++;
+      reslen ++;
+      res = realloc(res, reslen*sizeof(char *));
+      res[residx] = calloc(256, sizeof(char));
+    }
+    else {
+      res[residx][itmidx] = ch;
+      itmidx ++;
+    }
+    
+    // TODO: stretch to accomodate longer splits
+    if (itmidx > 254)
+      ferr("split", "overflow you lazy programmer you");
+
+  }
+
+  return res;
+}
+
+
 /**
  * Send a /d20 endpoint response
  */
-void get_d20(int fd)
+void get_d20(conndat_t *cd)
 {
   int random = rand() % 20 + 1;
 
   char *res = calloc(200, sizeof(char));
   sprintf(res, "%d\n", random);
 
-  fprintf(stderr, "D20 roll: %s\n", res);
+  timestamp("%s : D20 roll: %s", cd->addr, res);
 
-  send_response(fd, RESP_200, "text/plain", (void *)res, strlen(res));
+  send_response(cd, RESP_200, "text/plain", (void *)res, strlen(res));
+}
+
+
+
+void get_resistors(int fd, char *path)
+{
+
 }
 
 /**
  * Send a 404 response
  */
-void resp_404(int fd)
+void resp_404(conndat_t *cd)
 {
     char filepath[4096];
     struct file_data *filedata; 
@@ -100,14 +152,12 @@ void resp_404(int fd)
     filedata = file_load(filepath);
 
     if (filedata == NULL) {
-        // TODO: make this non-fatal
-        fprintf(stderr, "cannot find system 404 file\n");
-        exit(3);
+      send_response(cd, RESP_404, "text/html", "<html><body><h1>404</h1>not found</body></html>", 48);
+      return;
     }
 
     mime_type = mime_type_get(filepath);
-
-    send_response(fd, RESP_404, mime_type, filedata->data, filedata->size);
+    send_response(cd, RESP_404, mime_type, filedata->data, filedata->size);
 
     file_free(filedata);
 }
@@ -115,13 +165,29 @@ void resp_404(int fd)
 /**
  * Read and return a file from disk or cache
  */
-void get_file(int fd, struct cache *cache, char *request_path)
+void get_file(conndat_t *cd, struct cache *cache, char *request_path)
 {
-    ///////////////////
-    // IMPLEMENT ME! //
-    ///////////////////
 
   // if in cache, read from there, if not try from disk
+
+  if (strcmp(request_path, "/") == 0)
+    request_path = "/index.html";
+
+  char *fpath = calloc(100, sizeof(char));
+  sprintf(fpath, "./%s", request_path);
+  char *contents = (char *)read_file(fpath);
+  
+  if (contents == NULL) {
+    resp_404(cd);
+    return;
+  }
+
+  //fprintf(stderr, "%s\n", contents);
+
+  send_response(cd, RESP_200, "text/html", (void *)contents, strlen(contents));
+
+  free(contents);
+
 }
 
 /**
@@ -142,64 +208,40 @@ char *find_start_of_body(char *header)
 /**
  * Handle HTTP request and send response
  */
-void handle_http_request(int fd, struct cache *cache)
+void handle_http_request(conndat_t *cd, struct cache *cache)
 {
     const int request_buffer_size = 65536; // 64K
     char request[request_buffer_size];
 
     // Read request
-    int bytes_recvd = recv(fd, request, request_buffer_size - 1, 0);
+    int bytes_recvd = recv(cd->fd, request, request_buffer_size - 1, 0);
 
     if (bytes_recvd < 0) {
         perror("recv");
         return;
     }
 
-    fprintf(stderr, "<request>\n%s\n</request>\n", request);
+    char **res = split(request, ' ');
+    char *cmd = res[0];
+    char *path = res[1];
 
-    char cmd[10] = {0};
-    char path[256] = {0};
-    char ch;
-
-    int cmd_done = 0;
-    int j = 0;
-
-    for (int i = 0; i < strlen(request); i++) {
-      ch = request[i];
-
-      if (ch == ' ') {
-        if (cmd_done)
-          break;
-        
-        cmd_done = 1;
-        j = 0;
-        continue;
-      }
-      
-      if (cmd_done) {
-        path[j] = ch;
-      }
-      else {
-        cmd[j] = ch;
-      }
-
-      j++;
-
-    }
+    timestamp("%s : %s %s\n", cd->addr, cmd, path);
 
     if (strcmp(cmd, "GET") == 0) {
-      fprintf(stderr, "%s\n", path);
       if (strcmp(path, "/d20") == 0) {
-        puts("GET D20");
-        get_d20(fd);
+        get_d20(cd);
       }
       else {
-        puts("GET FILE");
-        get_file(fd, cache, path);
+        get_file(cd, cache, path);
       }
     }
+    else if (strcmp(cmd, "POST") == 0) {
+      timestamp("%s : POST request, unimplemented\n", cd->addr);
+    }
+    else {
+      timestamp("%s : unknown command received \"%s\"\n", cd->addr, cmd);
+    }
 
-    // TODO (Stretch) If POST, handle the post request
 }
 
 /**
@@ -216,17 +258,11 @@ int main(void)
     // Get a listening socket
     int listenfd = get_listener_socket(PORT);
 
-    if (listenfd < 0) {
-        fprintf(stderr, "webserver: fatal error getting listening socket\n");
-        exit(1);
-    }
+    if (listenfd < 0)
+        ferr("main","fatal error getting listening socket\n");
 
-    printf("webserver: waiting for connections on port %s...\n", PORT);
+    timestamp("cweb started. waiting for connections on port %s.", PORT);
 
-    // This is the main loop that accepts incoming connections and
-    // responds to the request. The main parent process
-    // then goes back to waiting for new connections.
-    
     while(1) {
         socklen_t sin_size = sizeof their_addr;
 
@@ -242,12 +278,17 @@ int main(void)
         inet_ntop(their_addr.ss_family,
             get_in_addr((struct sockaddr *)&their_addr),
             s, sizeof s);
-        printf("server: got connection from %s\n", s);
+
+        timestamp("request from %s", s);
         
         // newfd is a new socket descriptor for the new connection.
         // listenfd is still listening for new connections.
 
-        handle_http_request(newfd, cache);
+        conndat_t cd;
+        cd.fd = newfd;
+        cd.addr = s;
+
+        handle_http_request(&cd, cache);
 
         close(newfd);
     }
