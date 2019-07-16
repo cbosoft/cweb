@@ -7,6 +7,8 @@ OBJ = src/server.o \
 			src/file.o \
 			src/hashtable.o \
 			src/llist.o \
+			src/error.o \
+			src/io.o \
 			src/mime.o \
 			src/net.o
 
