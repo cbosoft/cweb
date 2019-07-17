@@ -4,10 +4,11 @@ LINK =
 
 OBJ = src/server.o \
 			src/cache.o \
-			src/file.o \
 			src/hashtable.o \
 			src/llist.o \
 			src/error.o \
+			src/util.o \
+			src/request.o \
 			src/io.o \
 			src/mime.o \
 			src/net.o
