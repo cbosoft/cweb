@@ -1,0 +1,65 @@
+* {
+  background: black;
+  color: white;
+  font-family: sans-serif;
+}
+
+a {
+  font-family: monospace;
+}
+
+button, input, textarea {
+  border: 1px solid white;
+}
+
+input {
+  width: 100%;
+}
+
+button:hover {
+  background: lightgray;
+  color: black;
+}
+
+.col-left {
+  float: left;
+  width: 50%;
+  margin-top: 6px;
+}
+
+.col-tiny {
+  float: left;
+  width: 10%;
+  margin-top: 6px;
+}
+
+.col-right {
+  float: left;
+  width: 40%;
+  margin-top: 6px;
+}
+
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+@media screen and (max-width: 600px) {
+  .col-large, .col-small, .col-tiny, input[type=submit] {
+    width: 100%;
+    margin-top: 0;
+  }
+}
+
+.centre {
+  margin: auto;
+  width: 50%;
+}
+
+@media (max-width: 800px) {
+  .centre {
+    margin: auto;
+    width: 80%;
+  }
+}
