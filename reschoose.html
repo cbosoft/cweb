@@ -2,8 +2,65 @@
   <head>
     <link rel="stylesheet" href="style.css">
     <title>Reschoose</title>
-    <script type="text/javascript" async
-  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+    <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"> </script>
+    <script type="text/javascript">
+      function reschoose() {
+        var resistors = document.getElementById("resistorlist").value.split(",");
+        var ratio = document.getElementById("ratio").value;
+        var numberresults = document.getElementById("number").value;
+        
+        var i, j;
+        var lb, ub;
+        lb = ratio * 0.9;
+        ub = ratio * 1.1;
+
+        var valid = [];
+        var score = [];
+
+        for (i = 0; i < resistors.length; i++) {
+          for (j = i+1; j < resistors.length; j++) {
+            var rat, ratinv;
+            rat = resistors[i]/resistors[j];
+            ratinv = 1.0/rat;
+
+            var pair = [resistors[i], resistors[j]];
+
+            if ((rat > lb && rat < ub) || (ratinv > lb && ratinv < ub)) {
+              valid.push(pair);
+              
+              var score1 = ((rat-ratio) ** 2.0) ** 0.5;
+              var score2 = ((ratinv-ratio) ** 2.0) ** 0.5;
+              score.push((score1<score2)?score1:score2);
+            }
+          }
+        }
+
+        if (valid.length == 0) {
+          document.getElementById("results").innerHTML = "<b>No results found.</b>";
+        }
+
+        var best = [];
+        for (i = 0; i < Math.min(numberresults, valid.length); i++) {
+          var idx = valid.indexOf(Math.min(...score));
+          best.push(valid.splice(idx));
+        }
+
+        console.log(best);
+        
+        var resstr = "<h3>Results</h3><ul>";
+        for (i = 0; i < best.length; i++) {
+          var pair = best[i][0];
+          resstr += `<li>${pair[0]} &Omega; and ${pair[1]} &Omega;</li>`
+          console.log(resstr);
+        }
+        resstr += "</ul>"
+        var e = document.getElementById("results");
+        console.log(e);
+        e.innerHTML = resstr;
+
+        //alert(resstr);
+
+      }
     </script>
   </head>
   <body>
@@ -27,17 +84,21 @@
       over again. So here we are.</p>
 
       <div class="container">
-      <form action="/reschoose.html" method="post">
+        <!--<form> action="/reschoose.html" method="post"> --!>
+
         <div class="row">
           <div class="col-left">
-          <label for="resistorlist">Possible resistor values? (in &Omega;)</label>
+            <label for="resistorlist">Possible resistor values? (in &Omega;)</label>
           </div>
           <div class="col-tiny">
           </div>
           <div class="col-right">
-          <input name="resistorlist" id="resistorlist" value="100,200">
+            <textarea name="resistorlist" id="resistorlist">1,2.2,7.5,8.2,10,15,22,27,33,29,47,56,68,75,82,100,120,150,180,220,270,330,390,470,510,680,820,1000,1500,2200,3000,3900,4700,5600,6800,7500,8200,10000,15000,22000,33000,39000,47000,56000,68000,75000,82000,1000000,1500000,2000000,3300000,4700000,5600000,10000000</textarea>
           </div>
         </div>
+
+        <br />
+
         <div class="row">
           <div class="col-left">
           <label for="ratio">What is the desired ratio? i.e. \(\frac{R_2}{R_1}\)</label>
@@ -48,6 +109,9 @@
           <input name="ratio" id="ratio" value="1.0">
           </div>
         </div>
+
+        <br />
+
         <div class="row">
           <div class="col-left">
           <label for="number">How many results?</label>
@@ -58,12 +122,19 @@
           <input name="number" id="number" value="2">
           </div>
         </div>
-        <br />
+
+        <br /><br />
+        
+
         <div class="row" style="text-align: center;">
-          <button>Calculate</button>
+          <button onclick="reschoose()">Calculate</button>
         </div>
-      </form>
+        <!--</form>--!>
+
+      <div id="results"></div>
+
     </div>
+
 
     <div class="footer" style="text-align: center;">
       <p>

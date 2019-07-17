@@ -12,7 +12,7 @@ button, input, textarea {
   border: 1px solid white;
 }
 
-input {
+input, textarea {
   width: 100%;
 }
 
@@ -45,21 +45,23 @@ button:hover {
   clear: both;
 }
 
-@media screen and (max-width: 600px) {
-  .col-large, .col-small, .col-tiny, input[type=submit] {
-    width: 100%;
-    margin-top: 0;
-  }
-}
-
 .centre {
   margin: auto;
   width: 50%;
+}
+
+label {
+  margin-top: 10px;
+  margin-bottom: 10px;
 }
 
 @media (max-width: 800px) {
   .centre {
     margin: auto;
     width: 80%;
+  }
+  .col-left, .col-right, .col-tiny, input[type=submit] {
+    width: 100%;
+    margin-top: 0;
   }
 }
