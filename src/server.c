@@ -37,20 +37,8 @@
 #include "io.h"
 #include "util.h"
 #include "request.h"
-
-#define PORT "80"  // the port users will be connecting to
-
-#define SERVER_FILES "./serverfiles"
-#define SERVER_ROOT "./serverroot"
-
-#define RESP_200 "HTTP/1.1 200 OK"
-#define RESP_204 "HTTP/1.1 204 NO CONTENT"
-#define RESP_404 "HTTP/1.1 404 NOT FOUND"
-
-typedef struct conndat_t {
-  int fd;
-  const char *addr;
-} conndat_t;
+#include "server.h"
+#include "reschoose.h"
 
 /**
  * Send an HTTP response
@@ -102,86 +90,6 @@ void get_d20(conndat_t *cd)
 
 
 
-void get_resistors(conndat_t *cd, struct request_t *req)
-{
-  char **pairs;
-  int npairs;
-
-  split_on_string(req->body, "&", &pairs, &npairs);
-
-  char **kv;
-  int nkv;
-
-  double *resistors = NULL;
-  double ratio = 0;
-  int number = -1;
-
-  for (int i = 0; i < npairs; i++) {
-    split_on_string(pairs[i], "=", &kv, &nkv);
-
-    if (nkv != 2) {
-      timestamp("not key-value pair (%d): \"%s\"", nkv, pairs[i]);
-      return;
-    }
-    
-    char *key = kv[0];
-    char *value = kv[1];
-
-    if (strcmp(key, "resistorlist") == 0) {
-      char ** resistorlist;
-      int nresistors;
-      split_on_string(value, "%2C", &resistorlist, &nresistors);
-      
-      resistors = malloc(nresistors*sizeof(double));
-      for (int i = 0; i < nresistors; i++)
-        resistors[i] = atof(resistorlist[i]);
-    }
-    else if (strcmp(key, "ratio") == 0) {
-      ratio = atof(value);
-    }
-    else if (strcmp(key, "number") == 0) {
-      number = atoi(value);
-    }
-    else {
-      timestamp("unknown key \"%s\"", key);
-    }
-
-  }
-
-
-  if (resistors == NULL) {
-    timestamp("get_resistors: resistors not specified");
-    return;
-  }
-
-  if (ratio == 0.0) {
-    timestamp("get_resistors: ratio cannot be zero/it wasn't set.");
-    return;
-  }
-
-  if (number < 0) {
-    timestamp("get_resistors: number of resistors cannot be negative/it wasn't set.");
-    return;
-  }
-
-
-  free(resistors);
-
-  char *res = calloc(1000, sizeof(char));
-
-  snprintf(res, 1000, 
-      "<html>\n"
-      "  <body>"
-      "    <h1>Result</h1>\n"
-      "    <p>number = %d, ratio = %f</p>\n"
-      "    <a href=\"reschoose.html\">back</a>\n"
-      "  </body>\n"
-      "</html>", number, ratio);
-  
-  send_response(cd, RESP_200, "text/html", (void *)res, strlen(res));
-
-  free(res);
-}
 
 /**
  * Send a 404 response
@@ -196,7 +104,12 @@ void resp_404(conndat_t *cd)
     char * filedata = (char *)read_file(filepath);
 
     if (filedata == NULL) {
-      send_response(cd, RESP_404, "text/html", "<html><body><h1>404</h1>not found</body></html>", 48);
+      send_response(cd, RESP_404, "text/html", 
+          HTML_HEADER("404")
+          "<h1>404</h1>"
+          "<p>not found</p>"
+          HTML_FOOTER, 
+          48);
       return;
     }
 
@@ -273,7 +186,7 @@ void handle_http_request(conndat_t *cd, struct cache *cache)
     }
     else if (strcmp(req->method, "POST") == 0) {
       timestamp("%s : POST %s \"%s\"\n", cd->addr, req->path, req->body);
-      get_resistors(cd, req);
+      reschoose(cd, req);
     }
     else {
       timestamp("%s : unknown command received \"%s\"\n", cd->addr, req->method);
