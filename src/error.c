@@ -49,5 +49,7 @@ void timestamp(const char *fmt, ...)
   info = localtime(&rt);
   strftime(timestr, MESGLEN-1, "%x %X", info);
 
-  fprintf(stdout, "(%s) %s\n", timestr, mesg);
+  FILE *fp = fopen("log.txt", "a");
+  fprintf(fp, "(%s) %s\n", timestr, mesg);
+  fclose(fp);
 }

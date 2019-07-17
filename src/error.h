@@ -1,3 +1,5 @@
+#pragma once
+
 #define MESGLEN 256
 
 #define FG_BLACK   "\033[30m"
@@ -28,3 +30,5 @@
 
 void ferr(const char * source, const char * fmt, ...);
 void timestamp(const char *fmt, ...);
+
+//vim: ft=c
