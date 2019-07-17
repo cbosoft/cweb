@@ -38,7 +38,7 @@
 #include "util.h"
 #include "request.h"
 
-#define PORT "3490"  // the port users will be connecting to
+#define PORT "80"  // the port users will be connecting to
 
 #define SERVER_FILES "./serverfiles"
 #define SERVER_ROOT "./serverroot"
