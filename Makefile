@@ -8,6 +8,7 @@ OBJ = src/server.o \
 			src/llist.o \
 			src/error.o \
 			src/util.o \
+			src/reschoose.o \
 			src/request.o \
 			src/io.o \
 			src/mime.o \
