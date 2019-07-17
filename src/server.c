@@ -32,10 +32,11 @@
 
 #include "error.h"
 #include "net.h"
-#include "file.h"
 #include "mime.h"
 #include "cache.h"
 #include "io.h"
+#include "util.h"
+#include "request.h"
 
 #define PORT "3490"  // the port users will be connecting to
 
@@ -82,38 +83,6 @@ int send_response(conndat_t *cd, char *header, char *content_type, void *body, i
 }
 
 
-char **split(char *in, char on)
-{
-  char **res = malloc(1*sizeof(char *));
-  int reslen = 1;
-  
-  int l = strlen(in), itmidx = 0, residx = 0;
-  res[residx] = calloc(256, sizeof(char));
-  
-  char ch;
-  for (int i = 0; i < l; i++) {
-    ch = in[i];
-
-    if (ch == on) {
-      itmidx = 0;
-      residx ++;
-      reslen ++;
-      res = realloc(res, reslen*sizeof(char *));
-      res[residx] = calloc(256, sizeof(char));
-    }
-    else {
-      res[residx][itmidx] = ch;
-      itmidx ++;
-    }
-    
-    // TODO: stretch to accomodate longer splits
-    if (itmidx > 254)
-      ferr("split", "overflow you lazy programmer you");
-
-  }
-
-  return res;
-}
 
 
 /**
@@ -133,9 +102,85 @@ void get_d20(conndat_t *cd)
 
 
 
-void get_resistors(int fd, char *path)
+void get_resistors(conndat_t *cd, struct request_t *req)
 {
+  char **pairs;
+  int npairs;
 
+  split_on_string(req->body, "&", &pairs, &npairs);
+
+  char **kv;
+  int nkv;
+
+  double *resistors = NULL;
+  double ratio = 0;
+  int number = -1;
+
+  for (int i = 0; i < npairs; i++) {
+    split_on_string(pairs[i], "=", &kv, &nkv);
+
+    if (nkv != 2) {
+      timestamp("not key-value pair (%d): \"%s\"", nkv, pairs[i]);
+      return;
+    }
+    
+    char *key = kv[0];
+    char *value = kv[1];
+
+    if (strcmp(key, "resistorlist") == 0) {
+      char ** resistorlist;
+      int nresistors;
+      split_on_string(value, "%2C", &resistorlist, &nresistors);
+      
+      resistors = malloc(nresistors*sizeof(double));
+      for (int i = 0; i < nresistors; i++)
+        resistors[i] = atof(resistorlist[i]);
+    }
+    else if (strcmp(key, "ratio") == 0) {
+      ratio = atof(value);
+    }
+    else if (strcmp(key, "number") == 0) {
+      number = atoi(value);
+    }
+    else {
+      timestamp("unknown key \"%s\"", key);
+    }
+
+  }
+
+
+  if (resistors == NULL) {
+    timestamp("get_resistors: resistors not specified");
+    return;
+  }
+
+  if (ratio == 0.0) {
+    timestamp("get_resistors: ratio cannot be zero/it wasn't set.");
+    return;
+  }
+
+  if (number < 0) {
+    timestamp("get_resistors: number of resistors cannot be negative/it wasn't set.");
+    return;
+  }
+
+
+  free(resistors);
+
+  char *res = calloc(1000, sizeof(char));
+
+  snprintf(res, 1000, 
+      "<html>\n"
+      "  <body>"
+      "    <h1>Result</h1>\n"
+      "    <p>number = %d, ratio = %f</p>\n"
+      "    <a href=\"reschoose.html\">back</a>\n"
+      "  </body>\n"
+      "</html>", number, ratio);
+  
+  send_response(cd, RESP_200, "text/html", (void *)res, strlen(res));
+
+  free(res);
 }
 
 /**
@@ -144,12 +189,11 @@ void get_resistors(int fd, char *path)
 void resp_404(conndat_t *cd)
 {
     char filepath[4096];
-    struct file_data *filedata; 
     char *mime_type;
 
     // Fetch the 404.html file
     snprintf(filepath, sizeof filepath, "%s/404.html", SERVER_FILES);
-    filedata = file_load(filepath);
+    char * filedata = (char *)read_file(filepath);
 
     if (filedata == NULL) {
       send_response(cd, RESP_404, "text/html", "<html><body><h1>404</h1>not found</body></html>", 48);
@@ -157,9 +201,7 @@ void resp_404(conndat_t *cd)
     }
 
     mime_type = mime_type_get(filepath);
-    send_response(cd, RESP_404, mime_type, filedata->data, filedata->size);
-
-    file_free(filedata);
+    send_response(cd, RESP_404, mime_type, filedata, strlen(filedata));
 }
 
 /**
@@ -167,7 +209,8 @@ void resp_404(conndat_t *cd)
  */
 void get_file(conndat_t *cd, struct cache *cache, char *request_path)
 {
-
+  
+  // TODO: caching
   // if in cache, read from there, if not try from disk
 
   if (strcmp(request_path, "/") == 0)
@@ -181,8 +224,6 @@ void get_file(conndat_t *cd, struct cache *cache, char *request_path)
     resp_404(cd);
     return;
   }
-
-  //fprintf(stderr, "%s\n", contents);
 
   send_response(cd, RESP_200, "text/html", (void *)contents, strlen(contents));
 
@@ -221,26 +262,25 @@ void handle_http_request(conndat_t *cd, struct cache *cache)
         return;
     }
 
-    char **res = split(request, ' ');
-    char *cmd = res[0];
-    char *path = res[1];
+    request[bytes_recvd] = '\0';
+    
+    struct request_t *req = parse_request(request);
 
-    timestamp("%s : %s %s\n", cd->addr, cmd, path);
+    if (strcmp(req->method, "GET") == 0) {
+      timestamp("%s : GET %s\n", cd->addr, req->path);
 
-    if (strcmp(cmd, "GET") == 0) {
-      if (strcmp(path, "/d20") == 0) {
-        get_d20(cd);
-      }
-      else {
-        get_file(cd, cache, path);
-      }
+      get_file(cd, cache, req->path);
     }
-    else if (strcmp(cmd, "POST") == 0) {
-      timestamp("%s : POST request, unimplemented\n", cd->addr);
+    else if (strcmp(req->method, "POST") == 0) {
+      timestamp("%s : POST %s \"%s\"\n", cd->addr, req->path, req->body);
+      get_resistors(cd, req);
     }
     else {
-      timestamp("%s : unknown command received \"%s\"\n", cd->addr, cmd);
+      timestamp("%s : unknown command received \"%s\"\n", cd->addr, req->method);
     }
+
+    free_request_t(req);
+    free(req);
 
 }
 
