@@ -30,7 +30,7 @@
               
               var score1 = ((rat-ratio) ** 2.0) ** 0.5;
               var score2 = ((ratinv-ratio) ** 2.0) ** 0.5;
-              score.push((score1<score2)?score1:score2);
+              score.push(Math.min(score1, score2));
             }
           }
         }
@@ -40,23 +40,35 @@
         }
 
         var best = [];
+        var bestscore = [];
         for (i = 0; i < Math.min(numberresults, valid.length); i++) {
-          var idx = valid.indexOf(Math.min(...score));
-          best.push(valid.splice(idx));
+          var idx = score.indexOf(Math.min(...score));
+          bestscore.push(score.splice(idx, 1));
+          best.push(valid.splice(idx, 1));
         }
 
-        console.log(best);
-        
         var resstr = "<h3>Results</h3><ul>";
         for (i = 0; i < best.length; i++) {
           var pair = best[i][0];
-          resstr += `<li>${pair[0]} &Omega; and ${pair[1]} &Omega;</li>`
-          console.log(resstr);
+          var scorestr = bestscore[i][0].toFixed(4);
+          var larg = Math.max(...pair);
+          var smol = Math.min(...pair);
+          var r1, r2;
+
+          if (ratio > 1.0) {
+            r1 = smol;
+            r2 = larg;
+          }
+          else {
+            r1 = larg;
+            r2 = smol;
+          }
+
+          resstr += `<li>\\(R_1 = ${r1}\\,\\Omega\\), \\(R_2 = ${r2}\\,\\Omega\\)</li>`
         }
         resstr += "</ul>"
-        var e = document.getElementById("results");
-        console.log(e);
-        e.innerHTML = resstr;
+        document.getElementById("results").innerHTML = resstr;
+        MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
 
         //alert(resstr);
 
