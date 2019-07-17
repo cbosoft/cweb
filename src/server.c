@@ -214,6 +214,13 @@ int main(void)
     if (listenfd < 0)
         ferr("main","fatal error getting listening socket\n");
 
+    if (fork()) {
+      exit(1);
+    }
+
+    FILE *logfp = fopen("log.txt", "w");
+    fclose(logfp);
+
     timestamp("cweb started. waiting for connections on port %s.", PORT);
 
     while(1) {
