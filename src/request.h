@@ -1,3 +1,5 @@
+#pragma once
+
 struct request_t {
   char *method;
   char *path;
