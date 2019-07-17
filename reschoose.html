@@ -1,23 +1,78 @@
 <html>
   <head>
+    <link rel="stylesheet" href="style.css">
+    <title>Reschoose</title>
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+    </script>
   </head>
   <body>
-    <form action="/reschoose.html" method="post">
-      <div>
-        <label for="resistorlist">Possible resistor values?</label>
-        <input name="resistorlist" id="resistorlist" value="100,200">
-      </div>
-      <div>
-        <label for="ratio">What is the desired ratio?</label>
-        <input name="ratio" id="ratio" value="1.0">
-      </div>
-      <div>
-        <label for="number">How many results?</label>
-        <input name="number" id="number" value="2">
-      </div>
-      <div>
-        <button>Calculate</button>
-      </div>
-    </form>
+
+    <div class="centre">
+
+      <h1>Resistor combination chooser</h1>
+
+      <p>Given a list of resistors, and a desired ratio of resistances, gives a
+      list of suitables choices of resistors.</p>
+
+      <p>For example, you are designing an Op-amp circuit to multiply a voltage
+      by a value. This follows a formula: </p>
+
+      <p>$$ V_{out} = \left(1 + \frac{R_2}{R_1}\right)V_{in} $$</p>
+
+      <p>A common problem I find myself having to confront is choosing resistors
+      to fit this ratio, I normally end up choosing a resistor out of my
+      collection and using a second resistor to closely match the ratio. This
+      doesn't always work very well, and it can be annoying to do this over and
+      over again. So here we are.</p>
+
+      <div class="container">
+      <form action="/reschoose.html" method="post">
+        <div class="row">
+          <div class="col-left">
+          <label for="resistorlist">Possible resistor values?</label>
+          </div>
+          <div class="col-tiny">
+          </div>
+          <div class="col-right">
+          <input name="resistorlist" id="resistorlist" value="100,200">
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-left">
+          <label for="ratio">What is the desired ratio? i.e. \(\frac{R_2}{R_1}\)</label>
+          </div>
+          <div class="col-tiny">
+          </div>
+          <div class="col-right">
+          <input name="ratio" id="ratio" value="1.0">
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-left">
+          <label for="number">How many results?</label>
+          </div>
+          <div class="col-tiny">
+          </div>
+          <div class="col-right">
+          <input name="number" id="number" value="2">
+          </div>
+        </div>
+        <br />
+        <div class="row" style="text-align: center;">
+          <button>Calculate</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="footer" style="text-align: center;">
+      <p>
+      <a href="index.html">home</a>&nbsp<a href="https://github.com/cbosoft">github</a>
+      </p>
+    </div>
+
+    </div>
+
+
   </body>
 </html>
