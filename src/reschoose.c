@@ -101,7 +101,7 @@ void reschoose(conndat_t *cd, struct request_t *req)
       double rat = ri/rj, ratinv = rj/ri;
       if ((rat >lb && rat < lb) ||  (ratinv > lb && ratinv < ub)) {
         char sol[100] = {0};
-        sprintf(sol, "<li>%.0f and %.0f</li>", ri, rj);
+        sprintf(sol, "<li>%.0f&Omega; and %.0f&Omega;</li>", ri, rj);
         strcat(solutions, sol);
         nsolutions ++;
       }
