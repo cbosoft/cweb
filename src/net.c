@@ -1,3 +1,4 @@
+#define _POSIX_C_SOURCE 200112L
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
@@ -6,6 +7,7 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <arpa/inet.h>
+
 #include "net.h"
 
 #define BACKLOG 10	 // how many pending connections queue will hold
