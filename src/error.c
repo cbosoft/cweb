@@ -18,10 +18,12 @@ void ferr(const char * source, const char * fmt, ...)
   vsnprintf(mesg, MESGLEN-1, fmt, ap);
   va_end(ap);
 
-  fprintf(stderr, "  "BG_RED"FATAL ERROR!"RESET" in "FG_BLUE"%s"RESET" %s", source, mesg);
+  FILE *fp = fopen("log.txt", "a");
+  fprintf(fp, "  FATAL ERROR! in \"%s\" %s", source, mesg);
   if (errno)
-    fprintf(stderr, " (%d) %s", errno, strerror(errno));
-  fprintf(stderr, "\n");
+    fprintf(fp, " (%d) %s", errno, strerror(errno));
+  fprintf(fp, "\n");
+  fclose(fp);
 
   exit(1);
 }
