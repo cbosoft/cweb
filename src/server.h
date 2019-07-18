@@ -13,6 +13,7 @@
   "<html>"\
   "<head>"\
   "<link rel=\"stylesheet\" href=\"style.css\">"\
+  "<meta charset=\"UTF-8\">" \
   "<title>"TITLE"</title>"\
   "</head>"\
   "<body>" \
@@ -34,4 +35,4 @@ typedef struct conndat_t {
 } conndat_t;
 
 int send_response(conndat_t *cd, char *header, char *content_type, void *body, int content_length);
-// vim:ft=c
+// vim: ft=c
