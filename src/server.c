@@ -191,7 +191,7 @@ void handle_http_request(conndat_t *cd, struct cache *cache)
       git(cd, req);
     }
     else {
-      timestamp("%s : unknown command received \"%s\"\n", cd->addr, req->method);
+      timestamp("%s : unhandled method \"%s\"\n", cd->addr, req->method);
     }
 
     free_request_t(req);
