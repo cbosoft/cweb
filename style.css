@@ -15,16 +15,41 @@ textarea {
   width: 50%;
 }
 
-@media only screen and (max-width: 600px) {
-  .centre {
-    width: 90%;
-  }
+.centretxt {
+  text-align: center;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+th {
+  border-bottom: solid 1px;
+  font-weight: bold;
+}
+
+td {
+  text-align: right;
 }
 
 img.centre {
   display: block;
 }
 
+img {
+  max-width: 30%;
+  height: auto;
+}
+
 label {
   font-weight: bold;
+}
+
+@media only screen and (max-width: 600px) {
+  .centre {
+    width: 90%;
+  }
+  img {
+    max-width: 80%;
+  }
 }
