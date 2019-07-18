@@ -1,3 +1,4 @@
 *.o
 serv
 log.txt
+vgcore.*
