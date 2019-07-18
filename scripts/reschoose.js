@@ -114,7 +114,7 @@ function reschoose() {
     var smol = Math.min(...pair);
     var r1, r2, ratio;
 
-    if (ratio > 1.0) {
+    if (ratio < 1.0) {
       r1 = smol;
       r2 = larg;
     }
