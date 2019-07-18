@@ -172,6 +172,7 @@ void handle_http_request(conndat_t *cd, struct cache *cache)
 
     if (bytes_recvd < 0) {
         perror("recv");
+        timestamp("%s : recv error, could not read request.");
         return;
     }
 
