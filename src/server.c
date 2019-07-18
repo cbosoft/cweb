@@ -38,7 +38,7 @@
 #include "util.h"
 #include "request.h"
 #include "server.h"
-#include "reschoose.h"
+#include "git.h"
 
 /**
  * Send an HTTP response
@@ -186,7 +186,8 @@ void handle_http_request(conndat_t *cd, struct cache *cache)
     }
     else if (strcmp(req->method, "POST") == 0) {
       timestamp("%s : POST %s \"%s\"\n", cd->addr, req->path, req->body);
-      reschoose(cd, req);
+
+      git(cd, req);
     }
     else {
       timestamp("%s : unknown command received \"%s\"\n", cd->addr, req->method);
@@ -215,7 +216,8 @@ int main(void)
         ferr("main","fatal error getting listening socket\n");
 
     if (fork()) {
-      exit(1);
+      fprintf(stdout, "cweb server forked to background, logging to log.txt.\n");
+      exit(0);
     }
 
     FILE *logfp = fopen("log.txt", "w");
