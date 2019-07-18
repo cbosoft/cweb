@@ -102,13 +102,17 @@ function reschoose() {
     best.push(valid.splice(idx, 1));
   }
 
-  var resstr = "<h3>Results</h3><ul>";
+
+  var resstr;
+  resstr  = "<h3>Results</h3>"
+  resstr += "<table class=\"centre\">";
+  resstr += "<tr><th>\\(R_1(\\Omega)\\)</th><th>\\(R_2(\\Omega)\\)</th><th>Ratio</th></tr>";
   for (i = 0; i < best.length; i++) {
     var pair = best[i][0];
     var scorestr = bestscore[i][0].toFixed(4);
     var larg = Math.max(...pair);
     var smol = Math.min(...pair);
-    var r1, r2;
+    var r1, r2, ratio;
 
     if (ratio > 1.0) {
       r1 = smol;
@@ -119,10 +123,14 @@ function reschoose() {
       r2 = smol;
     }
 
-    resstr += `<li>\\(R_1 = ${r1}\\,\\Omega\\), \\(R_2 = ${r2}\\,\\Omega\\)</li>`
+    ratio = getratio(r1, r2).toFixed(3);
+
+    resstr += `<tr><td>${r1}</td><td>${r2}</td><td>${ratio}</td></tr>`
   }
-  resstr += "</ul>"
+  resstr += "</table>"
   document.getElementById("results").innerHTML = resstr;
+
+  // make everything math-y
   MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
 
 }
