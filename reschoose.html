@@ -17,90 +17,48 @@
       <p>Given a list of resistors, and a desired ratio of resistances, gives a
       list of suitables choices of resistors.</p>
 
-      <p>For example, you are designing an Op-amp circuit to multiply a voltage
-      by a value. This follows a formula: </p>
-
-      <p>$$ V_{out} = \left(1 + \frac{R_2}{R_1}\right)V_{in} $$</p>
-
-      <p>A common problem I find myself having to confront is choosing resistors
-      to fit this ratio, I normally end up choosing a resistor out of my
-      collection and using a second resistor to closely match the ratio. This
-      doesn't always work very well, and it can be annoying to do this over and
-      over again. So here we are.</p>
-
       <div class="container">
 
-        <div class="row">
-          <div class="col-left">
-            <label for="resistorlist">What situation are you in?</label>
-          </div>
-          <div class="col-tiny">
-          </div>
-          <div class="col-right">
-            <input type="radio" name="situ" id="situationvdiv" onclick="update_ratio_label();">Voltage divider<br>
-            <input type="radio" name="situ" id="situationinv" onclick="update_ratio_label();">Inverting op-amp<br>
-            <input type="radio" name="situ" id="situationnoninv" onclick="update_ratio_label();">Non-inverting op-amp<br>
-            <input type="radio" name="situ" id="situationother" onclick="update_ratio_label();">Other
-          </div>
-        </div>
+        <h3>What are you designing?</h3>
+        <input type="radio" name="situ" id="situationvdiv" onclick="update_ratio_label();">Voltage divider<br>
+        <input type="radio" name="situ" id="situationinv" onclick="update_ratio_label();">Inverting op-amp<br>
+        <input type="radio" name="situ" id="situationnoninv" onclick="update_ratio_label();">Non-inverting op-amp<br>
+        <input type="radio" name="situ" id="situationother" onclick="update_ratio_label();">Other
 
         <br />
 
-        <div class="row">
-          <div class="col-left">
-            <label for="resistorlist">Possible resistor values? (in \(\Omega\))</label>
-          </div>
-          <div class="col-tiny">
-          </div>
-          <div class="col-right">
-            <textarea name="resistorlist" id="resistorlist" class="textinput">1,2.2,7.5,8.2,10,15,22,27,33,29,47,56,68,75,82,100,120,150,180,220,270,330,390,470,510,680,820,1000,1500,2200,3000,3900,4700,5600,6800,7500,8200,10000,15000,22000,33000,39000,47000,56000,68000,75000,82000,1000000,1500000,2000000,3300000,4700000,5600000,10000000</textarea>
-          </div>
-        </div>
+        <h3>Possible resistor values? (in \(\Omega\))</h3>
+        <textarea name="resistorlist" id="resistorlist" class="textinput" rows="6">1,2.2,7.5,8.2,10,15,22,27,33,29,47,56,68,75,82,100,120,150,180,220,270,330,390,470,510,680,820,1000,1500,2200,3000,3900,4700,5600,6800,7500,8200,10000,15000,22000,33000,39000,47000,56000,68000,75000,82000,1000000,1500000,2000000,3300000,4700000,5600000,10000000</textarea>
 
         <br />
 
-        <div class="row">
-          <div class="col-left">
-          <label>What is the desired ratio?</label>
-          <p id="ratioexpl"></p>
-          </div>
-          <div class="col-tiny">
-          </div>
-          <div class="col-right">
-          <input name="ratio" id="ratio" value="1.0" class="textinput">
-          </div>
-        </div>
+        <h3>What is the desired ratio?</h3>
+        <p id="ratioexpl"></p>
+        <input name="ratio" id="ratio" value="1.0" class="textinput">
 
         <br />
 
-        <div class="row">
-          <div class="col-left">
-          <label for="number">How many results?</label>
-          </div>
-          <div class="col-tiny">
-          </div>
-          <div class="col-right">
-          <input name="number" id="number" value="10" class="textinput">
-          </div>
-        </div>
+        <h3>How many results?</h3>
+        <input name="number" id="number" value="10" class="textinput">
 
         <br /><br />
-        
 
-        <div class="center">
+        <div class="centretxt">
           <button onclick="reschoose()">Calculate</button>
         </div>
 
-      <div id="results"></div>
+        <br /><br />
 
-    </div>
+        <div id="results"></div>
+
+      </div>
 
 
-    <div class="footer" style="text-align: center;">
-      <p>
-      <a href="index.html">home</a>&nbsp<a href="https://github.com/cbosoft">github</a>
-      </p>
-    </div>
+      <div class="footer" style="text-align: center;">
+        <p>
+        <a href="index.html">home</a>&nbsp<a href="https://github.com/cbosoft">github</a>
+        </p>
+      </div>
 
     </div>
 
