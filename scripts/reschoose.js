@@ -135,6 +135,14 @@ function reschoose() {
 
 }
 
+
+
+
+
+
+
+
+
 function update_ratio_label(){
   var situation = get_situation();
 
@@ -142,17 +150,20 @@ function update_ratio_label(){
 
   switch (situation) {
     case 1:
-      expl.innerHTML  = "For a voltage divider:";
+      expl.innerHTML  = "For a voltage divider:<br>";
+      expl.innerHTML += "<img src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/2/21/Resistive_divider2.svg/220px-Resistive_divider2.svg.png\" class=\"centre\" />";
       expl.innerHTML += "$$\\frac{V_{out}}{V_{in}} = \\frac{R_2}{R_1 + R_2}$$";
       expl.innerHTML += "Enter the <b>voltage ratio</b> below.";
       break;
     case 2:
-      expl.innerHTML  = "For an inverting op-amp:<br><img src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Op-Amp_Inverting_Amplifier.svg/300px-Op-Amp_Inverting_Amplifier.svg.png\" class=\"centre\"/>";
+      expl.innerHTML  = "For an inverting op-amp:<br>"
+      expl.innerHTML += "<img src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Op-Amp_Inverting_Amplifier.svg/300px-Op-Amp_Inverting_Amplifier.svg.png\" class=\"centre\"/>";
       expl.innerHTML += "$$\\frac{V_{out}}{V_{in}} = -\\frac{R_f}{R_{in}} = -\\frac{R_2}{R_1}$$";
       expl.innerHTML += "Enter the <b>magnitude</b> of the desired <b>voltage ratio</b> below.";
       break;
     case 3:
-      expl.innerHTML  = "For an inverting op-amp:<br><img src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Op-Amp_Non-Inverting_Amplifier.svg/300px-Op-Amp_Non-Inverting_Amplifier.svg.png\" class=\"centre\"/>";
+      expl.innerHTML  = "For an inverting op-amp:<br>"
+      expl.innerHTML += "<img src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Op-Amp_Non-Inverting_Amplifier.svg/300px-Op-Amp_Non-Inverting_Amplifier.svg.png\" class=\"centre\"/>";
       expl.innerHTML += "$$\\frac{V_{out}}{V_{in}} = \\left(1 + \\frac{R_2}{R_{1}}\\right)$$";
       expl.innerHTML += "Enter the desired <b>voltage ratio</b> below.";
       break;
