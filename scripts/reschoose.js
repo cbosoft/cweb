@@ -149,7 +149,9 @@ function update_ratio_label(){
       expl.innerHTML += "Enter the desired <b>voltage ratio</b> below.";
       break;
     case 0:
-      expl.innerHTML = "For any ratio of resistances, $$\\frac{R_1}{R_2}$$, enter the desired <b>resistor ratio</b> below."
+      expl.innerHTML  = "For any ratio of resistances given by:";
+      expl.innerHTML += "$$\\frac{R_1}{R_2}$$";
+      expl.innerHTML += "Enter the desired <b>resistor ratio</b> below."
       break;
   }
   MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
