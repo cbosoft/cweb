@@ -1,7 +1,62 @@
+function simpleresratio(r1, r2) {
+  return r1 / r2;
+}
+
+function vdivresratio(r1, r2) {
+  return r2/(r1+r2);
+}
+
+function noninvrestatio(r1, r2) {
+  return (1+(r2/r1));
+}
+
+function invrestatio(r1, r2) {
+  return r2/r1;
+}
+
+
+
+
+function get_situation() {
+  if (document.getElementById("situationvdiv").checked) {
+    return 1;
+  }
+  else if (document.getElementById("situationinv").checked) {
+    return 2;
+  }
+  else if (document.getElementById("situationnoninv").checked) {
+    return 3;
+  }
+  else {
+    return 0;
+  }
+}
+
+
+
+
 function reschoose() {
   var resistors = document.getElementById("resistorlist").value.split(",");
   var ratio = document.getElementById("ratio").value;
   var numberresults = document.getElementById("number").value;
+
+  if (ratio < 0.0) ratio *= -1.0;
+
+  var situation = get_situation();
+  var getratio = simpleresratio;
+
+  switch (situation) {
+    case 1:
+      console.log("VDIV");
+      getratio = vdivresratio;
+      break;
+    case 2:
+      getratio = invrestatio;
+      break;
+    case 3:
+      getratio = noninvrestatio;
+      break;
+  }
   
   var i, j;
   var lb, ub;
@@ -13,24 +68,30 @@ function reschoose() {
 
   for (i = 0; i < resistors.length; i++) {
     for (j = i+1; j < resistors.length; j++) {
-      var rat, ratinv;
-      rat = resistors[i]/resistors[j];
-      ratinv = 1.0/rat;
+      var rat, ratinv, r1 = Number(resistors[i]), r2 = Number(resistors[j]);
+      console.log(r1);
+      rat = getratio(r1, r2);
+      ratinv = getratio(r2, r1);
 
-      var pair = [resistors[i], resistors[j]];
+      if (rat > lb && rat < ub) {
 
-      if ((rat > lb && rat < ub) || (ratinv > lb && ratinv < ub)) {
-        valid.push(pair);
-        
-        var score1 = ((rat-ratio) ** 2.0) ** 0.5;
-        var score2 = ((ratinv-ratio) ** 2.0) ** 0.5;
-        score.push(Math.min(score1, score2));
+        console.log(ratio, rat, r1, r2, "rat");
+        valid.push([resistors[i], resistors[j]]);
+        score.push(((rat-ratio) ** 2.0) ** 0.5);
       }
+      else if (ratinv > lb && ratinv < ub) {
+
+        console.log(ratio, ratinv, r1, r2, "inv");
+        valid.push([resistors[j], resistors[i]]);
+        score.push(((ratinv-ratio) ** 2.0) ** 0.5);
+      }
+
     }
   }
 
   if (valid.length == 0) {
     document.getElementById("results").innerHTML = "<b>No results found.</b>";
+    return;
   }
 
   var best = [];
@@ -64,4 +125,32 @@ function reschoose() {
   document.getElementById("results").innerHTML = resstr;
   MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
 
+}
+
+function update_ratio_label(){
+  var situation = get_situation();
+
+  var expl= document.getElementById("ratioexpl");
+
+  switch (situation) {
+    case 1:
+      expl.innerHTML  = "For a voltage divider:";
+      expl.innerHTML += "$$\\frac{V_{out}}{V_{in}} = \\frac{R_2}{R_1 + R_2}$$";
+      expl.innerHTML += "Enter the <b>voltage ratio</b> below.";
+      break;
+    case 2:
+      expl.innerHTML  = "For an inverting op-amp:<br><img src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Op-Amp_Inverting_Amplifier.svg/300px-Op-Amp_Inverting_Amplifier.svg.png\" class=\"centre\"/>";
+      expl.innerHTML += "$$\\frac{V_{out}}{V_{in}} = -\\frac{R_f}{R_{in}} = -\\frac{R_2}{R_1}$$";
+      expl.innerHTML += "Enter the <b>magnitude</b> of the desired <b>voltage ratio</b> below.";
+      break;
+    case 3:
+      expl.innerHTML  = "For an inverting op-amp:<br><img src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Op-Amp_Non-Inverting_Amplifier.svg/300px-Op-Amp_Non-Inverting_Amplifier.svg.png\" class=\"centre\"/>";
+      expl.innerHTML += "$$\\frac{V_{out}}{V_{in}} = \\left(1 + \\frac{R_2}{R_{1}}\\right)$$";
+      expl.innerHTML += "Enter the desired <b>voltage ratio</b> below.";
+      break;
+    case 0:
+      expl.innerHTML = "For any ratio of resistances, $$\\frac{R_1}{R_2}$$, enter the desired <b>resistor ratio</b> below."
+      break;
+  }
+  MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
 }
