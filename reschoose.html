@@ -8,7 +8,7 @@
     <script type="text/javascript" src="scripts/reschoose.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1">
   </head>
-  <body onload="update_ratio_label();">
+  <body onload="update_labels();">
 
     <div class="centre">
 
@@ -20,15 +20,24 @@
       <div class="container">
 
         <h3>What are you designing?</h3>
-        <input type="radio" name="situ" id="situationvdiv" onclick="update_ratio_label();">Voltage divider<br>
+        <input type="radio" name="situ" id="situationvdiv" onclick="update_ratio_label();" checked="true">Voltage divider<br>
         <input type="radio" name="situ" id="situationinv" onclick="update_ratio_label();">Inverting op-amp<br>
         <input type="radio" name="situ" id="situationnoninv" onclick="update_ratio_label();">Non-inverting op-amp<br>
         <input type="radio" name="situ" id="situationother" onclick="update_ratio_label();">Other
 
         <br />
 
-        <h3>Possible resistor values? (in \(\Omega\))</h3>
-        <textarea name="resistorlist" id="resistorlist" class="textinput" rows="6">1,2.2,7.5,8.2,10,15,22,27,33,29,47,56,68,75,82,100,120,150,180,220,270,330,390,470,510,680,820,1000,1500,2200,3000,3900,4700,5600,6800,7500,8200,10000,15000,22000,33000,39000,47000,56000,68000,75000,82000,1000000,1500000,2000000,3300000,4700000,5600000,10000000</textarea>
+        <h3>Which resistor set?</h3>
+        <p>Resistor values were standardised in the 1950s in the 
+        <a href="https://en.wikipedia.org/wiki/E_series_of_preferred_numbers">"E series of preferred numbers"</a>. 
+        These values are logarithmically spaced in differing amounts. The <b>E12</b> series has 12 values per decade, 
+        the <b>E6</b> has 6 per decade.</p>
+        <p id="resex"></p>
+        <input type="radio" name="resistorset" id="E24" onclick="update_res_ex();">E24<br>
+        <input type="radio" name="resistorset" id="E12" onclick="update_res_ex();" checked="true">E12<br>
+        <input type="radio" name="resistorset" id="E6" onclick="update_res_ex();">E6<br>
+        <input type="radio" name="resistorset" id="None" onclick="update_res_ex();">None<br>
+        Additional resistors: <input id="extra">
 
         <br />
 
