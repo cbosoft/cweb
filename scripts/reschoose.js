@@ -50,6 +50,11 @@ function get_resistor_set_choice() {
   }
 }
 
+function clear_results() {
+  var e = document.getElementById("results");
+  e.innerHTML = "";
+}
+
 
 
 
@@ -97,6 +102,9 @@ function update_res_ex() {
   var ex = document.getElementById("resex");
   ex.innerHTML = `<b>E${n}:</b> ` + get_E_set(n, 1).join(", ");
 }
+
+
+
 
 
 function get_resistor_set() {
@@ -231,6 +239,8 @@ function update_ratio_label(){
   var situation = get_situation();
 
   var expl= document.getElementById("ratioexpl");
+
+  clear_results();
 
   switch (situation) {
     case 1:
